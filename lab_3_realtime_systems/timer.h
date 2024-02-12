@@ -1,6 +1,8 @@
 #pragma once
+#include <stdint.h>
 
-void setupTIMER();
+uint16_t read_counter();
+
+uint16_t read_comparator();
 
 uint8_t passed_0_5_sec();
-

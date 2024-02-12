@@ -3,6 +3,7 @@
 #include <avr/interrupt.h>
 #include "tinythreads.h"
 #include "joy_stick.h"
+#include "timer.h"
 
 #define NULL            0
 // Disable interrupts
@@ -241,14 +242,23 @@ void unlock(mutex *m) {
 
 ISR(PCINT1_vect){
 	if (is_joistick_down()){
-		while(1){};
 		yield();
 	}
 }
 
 ISR(TIMER1_COMPA_vect){
 	// when interrupt executes bit is cleared
-	TCNT1H = 0x00; // write to tmp
-	TCNT1L = 0x00; // write to lower causing temp to write to higher
+	// TCNT1H = 0x00; // write to tmp
+	// TCNT1L = 0x00; // write to lower causing temp to write to higher
+	DISABLE();
+	uint16_t val = read_comparator();
+	// add 50 ms
+	val = val + 0x0187;
+	// write higher bit
+	OCR1AH = (uint8_t)(val>>8);
+	// write lower bit
+	OCR1AL = (uint8_t)val;
+	ENABLE();
+	
 	yield();
 }
