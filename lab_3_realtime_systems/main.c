@@ -11,6 +11,9 @@
 #include "tinythreads.h"
 #include "joy_stick.h"
 
+mutex blink_mut = MUTEX_INIT;
+mutex joy_stick_mut = MUTEX_INIT;
+
 void printAt(long num, int pos) {
 	
 	uint8_t pp = pos;
@@ -32,16 +35,29 @@ void computePrimes(int pos) {
 	}
 }
 
-void print_times_pressed(int pos){
-	while (1){
-		joy_release();
-		printAt((long)times_pressed,3);
-	}
-	
+void blink(int _){
+	lock(&blink_mut);
+	toggle_s1();
+	unlock(&blink_mut);
 }
 
+void print_times_pressed(int pos){
+	lock(&joy_stick_mut);
+	if (is_joistick_down()) {
+		times_pressed++;
+		printAt(times_pressed,3);
+	}
+	unlock(&joy_stick_mut);
+}
+
+
 int main() {
+	lock(&blink_mut);
+	lock(&joy_stick_mut);
+
 	setupLCD();
-	spawn(computePrimes, 0);
-	print_times_pressed(3);
+	
+	spawn(print_times_pressed, 0);
+	spawn(blink, 0);
+	computePrimes(0);
 }
