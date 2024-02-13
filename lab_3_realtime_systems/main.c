@@ -9,18 +9,16 @@
 #include "lcd.h"
 #include "primes.h"
 #include "tinythreads.h"
-// #include "switch_thread_interupt.c" //TODO add header file
-mutex pp_mutex = MUTEX_INIT;
-int pp;
+#include "joy_stick.h"
+
 void printAt(long num, int pos) {
-	lock(&pp_mutex);	
-	pp = pos;
+	
+	uint8_t pp = pos;
 	// to create lock conflict and create issues
 	// for (volatile uint16_t i = 0; i < 10000; i++){};
 	writeChar( (num % 100) / 10 + '0', pp);
 	pp++;
 	writeChar( num % 10 + '0', pp);
-	unlock(&pp_mutex);
 }
 
 void computePrimes(int pos) {
@@ -34,8 +32,16 @@ void computePrimes(int pos) {
 	}
 }
 
+void print_times_pressed(int pos){
+	while (1){
+		joy_release();
+		printAt((long)times_pressed,3);
+	}
+	
+}
+
 int main() {
 	setupLCD();
 	spawn(computePrimes, 0);
-	computePrimes(3);
+	print_times_pressed(3);
 }
