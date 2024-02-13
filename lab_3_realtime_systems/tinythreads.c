@@ -34,6 +34,7 @@ struct thread_block threads[NTHREADS];
 // the initial thread
 struct thread_block initp;
 
+
 // a queue of empty thread_blocks
 thread freeQ   = threads;
 // a queue of threads ready to be run
@@ -68,7 +69,7 @@ static void initialize(void) {
 	// use the 8 MHz system clock
 	// prescaler 1024
 	// clkio/256 = 0b101 = 0x5
-	TCCR1B = 0x5 << CS10;
+	// TCCR1B = 0x5 << CS10;
 	// set compare on match
 	// clear on timer match
 	// set OCA1 to high on match
@@ -90,7 +91,6 @@ static void initialize(void) {
 	TCNT1H = 0x00; // write to tmp
 	TCNT1L = 0x00; // write to lower causing temp to write to higher
 	
-
 	initialized = 1;
 	// enable interrupt
 	ENABLE();
@@ -100,23 +100,29 @@ static void initialize(void) {
 // - `p`: the thread to add
 // - `queue`: the queue to add it to
 static void enqueue(thread p, thread *queue) {
-	// set the thread next to null
-	p->next = NULL;
-
-	// if the queue is empty make the queue point to p as the first element
-	if (*queue == NULL) {
-		*queue = p;
-	} else {
-		thread q = *queue;
-		// loops until the last element in the queue, q->next == NULL
-		while (q->next){
-			q = q->next;
-		}
-		// make last element point to the new thread
-		q->next = p;
-	}
+	// set the thread next to pint to start of queue
+	p->next = *queue;
+	// make the queue variable point the the thread
+	*queue = p;
 }
 
+static void enqueue_last(thread p, thread *queue) {
+       // set the thread next to null
+       p->next = NULL;
+
+       // if the queue is empty make the queue point to p as the first element
+       if (*queue == NULL) {
+               *queue = p;
+       } else {
+               thread q = *queue;
+               // loops until the last element in the queue, q->next == NULL
+               while (q->next){
+                       q = q->next;
+               }
+               // make last element point to the new thread
+               q->next = p;
+       }
+}
 // ## Remove first element in queue and return it else return current
 // - `queue`: The queue to operate on
 // ### notes
@@ -193,20 +199,20 @@ void spawn(void (* function)(int), int arg) {
 		dispatch(dequeue(&readyQ));
 	}
 
-	// give up, get some help, its jover
 	SETSTACK(&newp->context, &newp->stack);
 
 	enqueue(newp, &readyQ);
-	// enable interupt
+	// enable interrupt
 	ENABLE();
+	yield(); // runs newp
 }
 
 // swith context to next thread
 void yield(void) {
 	DISABLE();
 	// add curent thread to queue
-	enqueue(current, &readyQ);
-	// run the next thread
+	enqueue_last(current, &readyQ);
+	// run the next thread	
 	ENABLE();
 	dispatch(dequeue(&readyQ));
 }
