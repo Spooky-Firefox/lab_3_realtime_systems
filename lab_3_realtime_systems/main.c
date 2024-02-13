@@ -10,6 +10,7 @@
 #include "primes.h"
 #include "tinythreads.h"
 #include "joy_stick.h"
+#include "timer.h"
 
 void printAt(long num, int pos) {
 	
@@ -40,8 +41,17 @@ void print_times_pressed(int pos){
 	
 }
 
+void blink(int _){
+	while (1){
+		if (passed_0_5_sec()){
+			toggle_s1();
+		}
+	}
+}
+
 int main() {
 	setupLCD();
 	spawn(computePrimes, 0);
+	spawn(blink,0);
 	print_times_pressed(3);
 }
