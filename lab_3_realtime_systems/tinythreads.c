@@ -58,9 +58,9 @@ static void initialize(void) {
 
 	// enable joystick interrupt
 	// enable external interrupts on pins 15 to 8
-	EIMSK = EIMSK | (1<<PCIE1);
+	// EIMSK = EIMSK | (1<<PCIE1);
 	// enable interrupt for pin 15, joystick down
-	PCMSK1 = PCMSK1 | (1<< PCINT12);
+	// PCMSK1 = PCMSK1 | (1<< PCINT12);
 	// enable pull upp resistor and other
 	setupJOYSTICK();
 
@@ -240,11 +240,11 @@ void unlock(mutex *m) {
 }
 
 
-ISR(PCINT1_vect){
-	if (is_joistick_down()){
-		yield();
-	}
-}
+// ISR(PCINT1_vect){
+// 	if (is_joistick_down()){
+// 		yield();
+// 	}
+// }
 
 ISR(TIMER1_COMPA_vect){
 	// when interrupt executes bit is cleared
