@@ -59,9 +59,9 @@ static void initialize(void) {
 
 	// enable joystick interrupt
 	// enable external interrupts on pins 15 to 8
-	// EIMSK = EIMSK | (1<<PCIE1);
+	EIMSK = EIMSK | (1<<PCIE1);
 	// enable interrupt for pin 15, joystick down
-	// PCMSK1 = PCMSK1 | (1<< PCINT12);
+	PCMSK1 = PCMSK1 | (1<< PCINT12);
 	// enable pull upp resistor and other
 	setupJOYSTICK();
 
@@ -69,7 +69,7 @@ static void initialize(void) {
 	// use the 8 MHz system clock
 	// prescaler 1024
 	// clkio/256 = 0b101 = 0x5
-	// TCCR1B = 0x5 << CS10;
+	TCCR1B = 0x5 << CS10;
 	// set compare on match
 	// clear on timer match
 	// set OCA1 to high on match
@@ -243,28 +243,4 @@ void unlock(mutex *m) {
 		m->locked = 0;
 		ENABLE();
 	}
-}
-
-
-// ISR(PCINT1_vect){
-// 	if (is_joistick_down()){
-// 		yield();
-// 	}
-// }
-
-ISR(TIMER1_COMPA_vect){
-	// when interrupt executes bit is cleared
-	// TCNT1H = 0x00; // write to tmp
-	// TCNT1L = 0x00; // write to lower causing temp to write to higher
-	DISABLE();
-	uint16_t val = read_comparator();
-	// add 50 ms
-	val = val + 0x0187;
-	// write higher bit
-	OCR1AH = (uint8_t)(val>>8);
-	// write lower bit
-	OCR1AL = (uint8_t)val;
-	ENABLE();
-	
-	yield();
 }
