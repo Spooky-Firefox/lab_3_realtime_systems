@@ -35,6 +35,7 @@ void computePrimes(int pos) {
 
 void print_times_pressed(int pos){
 	while (1){
+		//  causes to inc times pressed when joystick is released
 		joy_release();
 		printAt((long)times_pressed,3);
 	}
@@ -43,6 +44,7 @@ void print_times_pressed(int pos){
 
 void blink(int _){
 	while (1){
+		// if 0.5 seconds since "last" 0.5 seconds, toggle s1 
 		if (passed_0_5_sec()){
 			toggle_s1();
 		}
