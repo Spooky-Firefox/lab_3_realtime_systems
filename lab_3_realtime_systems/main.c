@@ -18,8 +18,6 @@
 // Enable interrupts
 #define ENABLE()        sei()
 
-mutex blink_mut = MUTEX_INIT;
-mutex joy_stick_mut = MUTEX_INIT;
 
 void printAt(long num, int pos) {
 	
@@ -43,42 +41,34 @@ void computePrimes(int pos) {
 }
 
 void blink(int _){
-	while(1){
-		lock(&blink_mut);
-		toggle_s1();
-	}
-	
-	// unlock(&blink_mut);
+	toggle_s1();
 }
 
 void print_times_pressed(int pos){
-	while (1){
-		lock(&joy_stick_mut);
-		if (is_joistick_down()) {
-			times_pressed++;
-			printAt(times_pressed,3);
-		}
-	}
-	
+	if (is_joistick_down()) {
+		times_pressed++;
+		printAt(times_pressed,3);
+	}	
 }
 
 
 int main() {
-	lock(&blink_mut);
-	lock(&joy_stick_mut);
-
+	// setup tinythread
+	initialize();
+	// setup lcd
 	setupLCD();
-	
-	spawn(print_times_pressed, 0);
-	spawn(blink, 0);
+	// print 00 at pos 3, aka times pressed location
+	printAt(0,3);
+	// main-thread now computes primes
 	computePrimes(0);
 }
 
-
+// joystick down interrupt
 ISR(PCINT1_vect){
-	unlock(&joy_stick_mut);
+	spawn(print_times_pressed, 0);
 }
 
+// timer interrupt 
 ISR(TIMER1_COMPA_vect){
 	DISABLE();
 	// when interrupt executes bit is cleared
@@ -93,5 +83,5 @@ ISR(TIMER1_COMPA_vect){
 	OCR1AL = (uint8_t)val;
 	ENABLE();
 	
-	unlock(&blink_mut);
+	spawn(blink, 0);
 }

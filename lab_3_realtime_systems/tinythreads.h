@@ -11,7 +11,11 @@
 struct thread_block;
 //# THIS IS ACTUALLY thread_block*
 typedef struct thread_block *thread;
+
+void initialize(void);
+
 void spawn(void (*code)(int), int arg);
+
 void yield(void);
 
 struct mutex_block {

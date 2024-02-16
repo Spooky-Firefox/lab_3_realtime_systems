@@ -45,7 +45,10 @@ thread current = &initp;
 // is globals initalized
 int initialized = 0;
 
-static void initialize(void) {
+void initialize(void) {
+	if (initialized) {
+		return;
+	}
 	//disable interrupt
 	DISABLE();
 	int i;
