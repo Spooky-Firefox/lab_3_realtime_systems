@@ -64,21 +64,26 @@ void print_times_pressed(int pos){
 
 
 int main() {
+	// lock both mutexes
 	lock(&blink_mut);
 	lock(&joy_stick_mut);
-
+	
+	// set up lcd display
 	setupLCD();
 	
+	// spawn two threads and make main thread count primes
 	spawn(print_times_pressed, 0);
 	spawn(blink, 0);
 	computePrimes(0);
 }
 
-
+// joystick down interrupt
 ISR(PCINT1_vect){
+	// unlock joystick mux causing print_times_pressed thread to run
 	unlock(&joy_stick_mut);
 }
 
+// timer interrupt
 ISR(TIMER1_COMPA_vect){
 	DISABLE();
 	// when interrupt executes bit is cleared
@@ -93,5 +98,6 @@ ISR(TIMER1_COMPA_vect){
 	OCR1AL = (uint8_t)val;
 	ENABLE();
 	
+	// unlock timer mux causing blink thread to run
 	unlock(&blink_mut);
 }
